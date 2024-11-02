@@ -6,9 +6,10 @@ days_full_name   = ["poniedziałek", "wtorek", "środa", "czwartek", "piątek", 
 months_full_name = ["styczeń", "luty", "marzec", "kwiecień", "maj", "czerwiec", 
                     "lipiec", "sierpień", "wrzesień", "październik", "listopad", "grudzień"]
 
-months_option  =  ["sty", "lut", "mar", "kwi", "maj", "czer", "lip", "sie", "wrz", "paz", "lis", "gru"]
-days_option    =  ["pn", "wt", "sr", "czw", "pt", "sb", "nd"]
 times_option   =  ["r", "w"]
+days_option    =  ["pn", "wt", "sr", "czw", "pt", "sb", "nd"]
+months_option  =  ["sty", "lut", "mar", "kwi", "maj", "czer", 
+                   "lip", "sie", "wrz", "paz", "lis", "gru"]
 
 def csv_operacje(sciezki, czy_odczyt):
     #kod dla plików w formacie csv
