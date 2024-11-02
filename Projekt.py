@@ -60,8 +60,8 @@ def main():
     parser.add_argument(
         '-d', '--dnie', nargs='+', type=str, choices=day_ranges, required=True,
         help=  'Zakresy dni do obsłużenia dla każdego miesiąca.\n'
-                + "Ma być tyle samo zakresów co miesięcy."
-                +f'Można podać pojedynczy dzień, gdzie dopuszczone wartości dla nazwy dnia to:\n\t{", ".join(days_option)}\n'
+                + "Ma być tyle samo zakresów co miesięcy.\n"
+                + f'Można podać pojedynczy dzień, gdzie dopuszczone wartości dla nazwy dnia to:\n\t{", ".join(days_option)}\n'
                 + 'Można też podać zakres dni (w postaci {od którego dnia}-{do którego dnia} włącznie) dla których mają być obsłużone pliki np. pn-czw, sr-nd.\n'
                 + 'Kolejność dni jak powyżej.\n'
                 + f'Struktura będzie obsługiwać odpowiednio podkatalogi o nazwach:\n\t{", ".join(days_full_name)}',
@@ -72,20 +72,24 @@ def main():
         '-p', '--pora', nargs='+', type=str, choices=times_option, default=None,
         help=   "Opcjonalna lista pór dnia.\n" 
                 + "Nie może być pusta. Jej długość nie powinna przekraczać ilości plików do obsłużenia.\n"
-                + "Można podać wartości tylko dla początkowych plików. Domyślna wartość to 'r'.\n"
                 + f"Dopuszczone wartości dla nazwy pory dnia to:\n\t{', '.join(times_option)}\n"
-                + f'Struktura będzie obsługiwać odpowiednio podkatalogi o nazwach:\n\t{", ".join(times_full_name)}',
+                + f'Struktura będzie obsługiwać odpowiednio podkatalogi o nazwach:\n\t{", ".join(times_full_name)}'
+                + "Można podać wartości tylko dla początkowych plików. Domyślna wartość to 'r'.\n",
         metavar=''
     )
 
     parser.add_argument(
         '-t', '--tworzenie', action='store_true', 
-        help="Opcjonalna flaga - jeśli dodana do polecenia, pliki będą tworzone. Domyślnie pliki są odczytywane."
+        help=   "Opcjonalna flaga\n"
+                + "Jeśli dodana do polecenia, pliki będą tworzone.\n"
+                + "Domyślnie pliki są odczytywane."
     )
 
     parser.add_argument(
         '-c', '--csv', action='store_true', 
-        help="Opcjonalna flaga - jeśli dodana do polecenia, format plików będzie csv. Domyślny format plików to json."
+        help=   "Opcjonalna flaga\n"
+                + "Jeśli dodana do polecenia, format plików będzie csv.\n"
+                + "Domyślny format plików to json."
     )
 
     args = parser.parse_args()
