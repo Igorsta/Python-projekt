@@ -40,7 +40,7 @@ def main():
     list_of_day_alias   = aliasing(days_full_name, days_option)
 
     parser = argparse.ArgumentParser(
-        description="Odczyta wartość z plików o zadanej strukturze lub je stworzy. \n" + 
+        description="Odczyta wartość z plików o zadanej strukturze lub je stworzy.\n" + 
                     'Kolejność plików taka jak zadana przez użytkownika.\n' +
                     'Nie należy powielać ścieżek dla pliku w tych samych podkatalogach.\n' +
                     'Nie należy odczytywać nieistniejących plików lub tworzyć już istniejących.\n' + 
@@ -80,19 +80,22 @@ def main():
 
     parser.add_argument(
         '-t', '--tworzenie', action='store_true', 
-        help=   "Opcjonalna flaga\n"
+        help=   "Opcjonalna flaga.\n"
                 + "Jeśli dodana do polecenia, pliki będą tworzone.\n"
                 + "Domyślnie pliki są odczytywane."
     )
 
     parser.add_argument(
         '-c', '--csv', action='store_true', 
-        help=   "Opcjonalna flaga\n"
+        help=   "Opcjonalna flaga.\n"
                 + "Jeśli dodana do polecenia, format plików będzie csv.\n"
                 + "Domyślny format plików to json."
     )
 
     args = parser.parse_args()
+
+    if len(args.miesiące) != len(args.dnie):
+        raise argparse.ArgumentError(None, "Ma być tyle samo zakresów co miesięcy")
     
     struktura= generuj_strukture_plików(args.miesiące, args.dnie, args.pora)
 
