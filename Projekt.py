@@ -1,4 +1,7 @@
 import argparse
+import csv
+import os
+import random
 from itertools import combinations
 
 times_full_name  = ["rano", "wieczorem"]
@@ -13,6 +16,42 @@ months_option  =  ["sty", "lut", "mar", "kwi", "maj", "czer",
 
 def csv_operacje(sciezki, czy_odczyt) -> bool:
     #kod dla plików w formacie csv
+    if czy_odczyt:
+        #odczytanie pliku
+        time_sum = 0
+        for sciezka in sciezki:
+            if not os.path.isfile(sciezka):
+                return False
+            try:
+                with open(sciezka, mode="r", newline='') as file:
+                    reader = csv.reader(file, delimiter=";")
+                    next(reader)
+                    for line in reader:
+                        model, wynik, czas = line
+                        if model == "A":
+                            time_sum += int(czas.replace("s", ""))
+            except Exception as e:
+                print(f"Błąd przy odczycie pliku o ścieżce {sciezka}: {e}")
+                return False
+        print(f"Suma czasów dla modelu 'A' wynosi {time_sum}s")
+    else:
+        #tworzenie losowego pliku    
+        for sciezka in sciezki:
+            if os.path.exists(sciezka):
+                return False
+            try:
+                os.makedirs(os.path.dirname(sciezka), exist_ok=True)
+                with open(sciezka, mode="w", newline='') as file:
+                    writer = csv.writer(file, delimiter=';')
+                    writer.writerow(["Model", "Wynik", "Czas"])
+                    model = random.choice(["A", "B", "C"])
+                    wynik = random.randint(0, 1000)
+                    czas = f"{random.randint(0, 1000)}s"
+                    writer.writerow([model, wynik, czas])
+                print(f"Utworzono plik CSV: {sciezka}")
+            except Exception as e:
+                print(f"Błąd przy tworzeniu pliku o sciezce {sciezka}: {e}")
+                return False
     return True
 
 def json_operacje(sciezki, czy_odczyt) -> bool:
