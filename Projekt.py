@@ -1,5 +1,9 @@
 import argparse
 from itertools import combinations
+import os
+import random
+import csv
+import json
 
 times_full_name  = ["rano", "wieczorem"]
 days_full_name   = ["poniedziałek", "wtorek", "środa", "czwartek", "piątek", "sobota", "niedziela"]
@@ -20,12 +24,118 @@ def json_operacje(sciezki, czy_odczyt) -> bool:
     return True
 
 def generuj_strukture_plików(miesiące, dnie, pory=None):
-    result = []
+    """
+    Generuje listę ścieżek dla plików na podstawie wybranych miesięcy, dni i pór dnia.
+    """
+    struktura = []
 
-    #kod dopisujący do result kolejne ścieżki plików
-    #zwraca None jeśli dane są niepoprawne
+    if pory is None:
+        pory = ['r'] * len(miesiące)
+
+    if len(pory) > len(miesiące):
+        return None
+
+    for idx, miesiąc in enumerate(miesiące):
+        dni_range = parse_dni_range(dnie[idx])
+        for dzień in dni_range:
+            pora_dnia = pory[idx] if idx < len(pory) else 'r'
+            folder_path = os.path.join(months_full_name[months_option.index(miesiąc)],
+                                       days_full_name[days_option.index(dzień)],
+                                       times_full_name[times_option.index(pora_dnia)])
+            struktura.append(folder_path)
+
+    # Sprawdzenie unikalności ścieżek
+    if len(struktura) != len(set(struktura)):
+        return None
+
+    return struktura
+
+def parse_dni_range(dni):
+    """
+    Parsuje zakres dni do listy dni.
+    """
+    if '-' in dni:
+        start, end = dni.split('-')
+        start_index = days_option.index(start)
+        end_index = days_option.index(end) + 1
+        return days_option[start_index:end_index]
+    else:
+        return [dni]
+
+def utworz_plik_csv(sciezka):
+    """
+    Tworzy plik CSV w podanej ścieżce z przykładowymi danymi.
+    """
+    if not os.path.exists(sciezka):
+        os.makedirs(sciezka)
     
-    return result
+    file_path = os.path.join(sciezka, 'Dane.csv')
+    if os.path.exists(file_path):
+        return False  # Plik już istnieje, nie tworzymy ponownie
+
+    with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile, delimiter=';')
+        writer.writerow(['Model', 'Wynik', 'Czas'])
+        writer.writerow([random.choice(['A', 'B', 'C']), random.randint(0, 1000), f"{random.randint(0, 1000)}s"])
+
+    return True
+
+def utworz_plik_json(sciezka):
+    """
+    Tworzy plik JSON w podanej ścieżce z przykładowymi danymi.
+    """
+    if not os.path.exists(sciezka):
+        os.makedirs(sciezka)
+    
+    file_path = os.path.join(sciezka, 'Dane.json')
+    if os.path.exists(file_path):
+        return False  # Plik już istnieje, nie tworzymy ponownie
+
+    data = {
+        'Model': random.choice(['A', 'B', 'C']),
+        'Wynik': random.randint(0, 1000),
+        'Czas': f"{random.randint(0, 1000)}s"
+    }
+
+    with open(file_path, 'w', encoding='utf-8') as jsonfile:
+        json.dump(data, jsonfile, ensure_ascii=False, indent=4)
+
+    return True
+
+def odczyt_plik_csv(sciezka):
+    """
+    Odczytuje plik CSV i sumuje wartości 'Czas' dla wierszy, w których 'Model' to 'A'.
+    """
+    suma_czasu = 0
+
+    file_path = os.path.join(sciezka, 'Dane.csv')
+    if not os.path.exists(file_path):
+        return False  # Plik nie istnieje
+
+    with open(file_path, 'r', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile, delimiter=';')
+        for row in reader:
+            if row['Model'] == 'A':
+                suma_czasu += int(row['Czas'].strip('s'))
+
+    return suma_czasu
+
+def odczyt_plik_json(sciezka):
+    """
+    Odczytuje plik JSON i sumuje wartości 'Czas' dla wierszy, w których 'Model' to 'A'.
+    """
+    suma_czasu = 0
+
+    file_path = os.path.join(sciezka, 'Dane.json')
+    if not os.path.exists(file_path):
+        return False  # Plik nie istnieje
+
+    with open(file_path, 'r', encoding='utf-8') as jsonfile:
+        data = json.load(jsonfile)
+        if data['Model'] == 'A':
+            suma_czasu += int(data['Czas'].strip('s'))
+
+    return suma_czasu
 
 def main():
     zipl        = lambda x, y: list(zip(x, y))
