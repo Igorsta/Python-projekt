@@ -20,7 +20,29 @@ def csv_operacje(sciezki, czy_odczyt) -> bool:
     return True
 
 def json_operacje(sciezki, czy_odczyt) -> bool:
-    #kod dla plików w formacie json
+        if czy_odczyt:
+        suma_sekund = 0
+        for sciezka in sciezki:
+            if not os.path.exists(sciezka):
+                return False
+            with open(sciezka, 'r', encoding='utf-8') as file:
+                linie = json.load(file)
+                dane = linie[1]
+                if dane.startswith("A"):
+                    sekundy = re.search(r'(\d+)s;', dane)
+                    suma_sekund += int(sekundy.group(1))
+        print(f"Suma sekund w tym zestawie ścieżek wynosi {suma_sekund}")
+    else:
+        for sciezka in sciezki:
+            if os.path.exists(sciezka):
+                return False
+            data = [ "Model; Wynik; Czas;", ]
+            model = random.choice([ "A", "B", "C" ])
+            wynik = random.randint(0, 1001)
+            czas = f"{random.randint(0, 1001)}s"
+            data.append(f"{model}; {wynik}; {czas};")
+            with open(sciezka, 'w', encoding='utf-8') as file:
+                json.dump(data, file, ensure_ascii=False, indent=4)
     return True
 
 def generuj_strukture_plików(miesiące, dnie, pory=None):
