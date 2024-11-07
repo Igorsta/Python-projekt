@@ -1,11 +1,11 @@
 from itertools import combinations
 from itertools import zip_longest
+from typing import List, Optional
 import argparse
 import random
 import json
 import csv
 import os
-import re
 
 typ_pliku = "json"
 
@@ -68,7 +68,7 @@ def operacja_tworzenie(sciezkaKatalogu: str, czy_csv: bool) -> None:
     
     print(sciezkaPliku.ljust(60), f"stworzono Dane.{typ_pliku}".center(40))
 
-def generuj_strukture_plików(miesiące, dnie, pory):
+def generuj_strukture_plików(miesiące: List[str], dnie: List[str], pory: Optional[List[str]]) -> Optional[List[str]]:
     if pory == None:
         pory = []
     
