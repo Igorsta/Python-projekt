@@ -5,6 +5,7 @@ import random
 import json
 import csv
 import os
+import re
 
 typ_pliku = "json"
 
@@ -17,95 +18,69 @@ MIESIĄCE= dict({"sty":"styczeń", "lut":"luty", "mar":"marzec", "kwi":"kwiecie�
                 "maj":"maj", "czer":"czerwiec", "lip":"lipiec", "sie":"sierpień", 
                 "wrz":"wrzesień", "paz":"październik", "lis":"listopad", "gru":"grudzień"})
 
+def operacja_odczyt(sciezkaKatalogu: str, czy_csv: bool) -> int:
+    suma_sekund = 0
 
-def utworz_plik_csv(sciezka):
-    """
-    Tworzy plik CSV w podanej ścieżce z przykładowymi danymi.
-    """
-    if not os.path.exists(sciezka):
-        os.makedirs(sciezka)
+    sciezkaPliku = os.path.join(sciezkaKatalogu, f"Dane.{typ_pliku}")
+
+    with open(sciezkaPliku, mode="r", newline='', encoding='utf-8') as file:
+        if czy_csv:
+            reader = csv.DictReader(file, delimiter=';')
+            
+            for row in reader:
+                if row['Model'] == 'A':
+                    suma_czasu += int(row['Czas'].strip('s'))
+        
+        else:
+            dane = json.load(file)
+                    
+            if dane['Model'] == 'A':
+                suma_sekund += int(dane['Czas'].strip('s'))
     
-    file_path = os.path.join(sciezka, 'Dane.csv')
-    if os.path.exists(file_path):
-        return False  # Plik już istnieje, nie tworzymy ponownie
+    print(sciezkaPliku.ljust(60), f"odczytano Dane.{typ_pliku}".center(40),  f"ilość sekund to {suma_sekund}".rjust(10))
 
-    with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
-        writer = csv.writer(csvfile, delimiter=';')
-        writer.writerow(['Model', 'Wynik', 'Czas'])
-        writer.writerow([random.choice(['A', 'B', 'C']), random.randint(0, 1000), f"{random.randint(0, 1000)}s"])
+    return suma_sekund
 
-    return True
+def operacja_tworzenie(sciezkaKatalogu: str, czy_csv: bool) -> None:
+    os.makedirs(os.path.dirname(sciezkaKatalogu), exist_ok=True)
 
-def utworz_plik_json(sciezka):
-    """
-    Tworzy plik JSON w podanej ścieżce z przykładowymi danymi.
-    """
-    if not os.path.exists(sciezka):
-        os.makedirs(sciezka)
+    sciezkaPliku = os.path.join(sciezkaKatalogu, f"Dane.{typ_pliku}")
+
+    with open(sciezkaPliku, "w", newline='', encoding = "utf-8") as file:
+        if czy_csv:    
+            writer = csv.writer(file, delimiter=';')
+                    
+            writer.writerow(["Model", "Wynik", "Czas"])
+                    
+            model = random.choice(["A", "B", "C"])
+            wynik = random.randint(0, 1000)
+            czas = f"{random.randint(0, 1000)}s"
+                    
+            writer.writerow([model, wynik, czas])
+        else:
+            data = {
+                'Model': random.choice(['A', 'B', 'C']),
+                'Wynik': random.randint(0, 1000),
+                'Czas': f"{random.randint(0, 1000)}s"
+            }
+            
+            json.dump(data, file, ensure_ascii=False, indent=4)
     
-    file_path = os.path.join(sciezka, 'Dane.json')
-    if os.path.exists(file_path):
-        return False  # Plik już istnieje, nie tworzymy ponownie
+    print(sciezkaPliku.ljust(60), f"stworzono Dane.{typ_pliku}".center(40))
 
-    data = {
-        'Model': random.choice(['A', 'B', 'C']),
-        'Wynik': random.randint(0, 1000),
-        'Czas': f"{random.randint(0, 1000)}s"
-    }
-
-    with open(file_path, 'w', encoding='utf-8') as jsonfile:
-        json.dump(data, jsonfile, ensure_ascii=False, indent=4)
-
-    return True
-
-def odczyt_plik_csv(sciezka):
-    """
-    Odczytuje plik CSV i sumuje wartości 'Czas' dla wierszy, w których 'Model' to 'A'.
-    """
-    suma_czasu = 0
-
-    file_path = os.path.join(sciezka, 'Dane.csv')
-    if not os.path.exists(file_path):
-        return False  # Plik nie istnieje
-
-    with open(file_path, 'r', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile, delimiter=';')
-        for row in reader:
-            if row['Model'] == 'A':
-                suma_czasu += int(row['Czas'].strip('s'))
-
-    return suma_czasu
-
-def odczyt_plik_json(sciezka):
-    """
-    Odczytuje plik JSON i sumuje wartości 'Czas' dla wierszy, w których 'Model' to 'A'.
-    """
-    suma_czasu = 0
-
-    file_path = os.path.join(sciezka, 'Dane.json')
-    if not os.path.exists(file_path):
-        return False  # Plik nie istnieje
-
-    with open(file_path, 'r', encoding='utf-8') as jsonfile:
-        data = json.load(jsonfile)
-        if data['Model'] == 'A':
-            suma_czasu += int(data['Czas'].strip('s'))
-
-    return suma_czasu
-
-def generuj_strukture_plików(miesiące, dnie, pory, czy_csv):
+def generuj_strukture_plików(miesiące, dnie, pory):
     if pory == None:
         pory = []
     
     struktura = []
-    shortcut = list(DNIE.keys())
+    skrót = list(DNIE.keys())
 
     for dzień, miesiąc, pora in zip_longest(dnie, miesiące, pory, fillvalue='r'):
         zakres = [dzień]
         
         if '-' in dzień:
-            start, end = [shortcut.index(brzeg) for brzeg in dzień.split('-')]
-            zakres = shortcut[start:end+1]
+            start, koniec = [skrót.index(brzeg) for brzeg in dzień.split('-')]
+            zakres = skrót[start:koniec+1]
         
         for dzień in zakres:
             folder_path = os.path.join(os.getcwd(),
@@ -186,13 +161,13 @@ def main():
 
     args = parser.parse_args()
 
-    if len([args.miesiące]) != len([args.dnie]):
-        raise argparse.ArgumentError(None, "Ma być tyle samo zakresów co miesięcy")
+    if len(args.miesiące) != len(args.dnie):
+        raise argparse.ArgumentError(None,  "Ma być tyle samo zakresów co miesięcy")
     
-    if len([args.pora]) > len([args.miesiące]):
+    if args.pora != None and len(args.pora) > len(args.miesiące):
         raise argparse.ArgumentError(None, "Podano za dużo pór")
     
-    struktura= generuj_strukture_plików(args.miesiące, args.dnie, args.pora, args.csv)
+    struktura= generuj_strukture_plików(args.miesiące, args.dnie, args.pora)
 
     if struktura == None:
         raise argparse.ArgumentError(None, "Wielokrotne podano tą samą ścieżkę")
@@ -204,23 +179,16 @@ def main():
     suma_sekund = 0
 
     for sciezka in struktura:
-        
-        sciezkaDoPlik = os.path.join(sciezka, f"plik.{typ_pliku}")
+        sciezkaDoPlik = os.path.join(sciezka, f"Dane.{typ_pliku}")
 
         if args.tworzenie == os.path.exists(sciezkaDoPlik):
             raise argparse.ArgumentError(None, f"Problem z dostępem do pliku! {sciezkaDoPlik}")
 
         try:
             if args.tworzenie:
-                if args.csv:
-                    utworz_plik_csv(sciezka)
-                else:
-                    utworz_plik_json(sciezka)
+                operacja_tworzenie(sciezka, args.csv)
             else:
-                if args.csv:
-                    odczyt_plik_csv(sciezka)
-                else:
-                    odczyt_plik_json(sciezka)
+                suma_sekund += operacja_odczyt(sciezka, args.csv)
 
         except Exception as e:
             raise Exception (f'Obsługa zapytania zakończyła się błędem {e}')
