@@ -21,11 +21,11 @@ MIESIĄCE= dict({"sty":"styczeń", "lut":"luty", "mar":"marzec", "kwi":"kwiecie�
 def operacja_odczyt(sciezkaKatalogu: str) -> int:
     suma_czasu = 0
     
-    file_path = os.path.join(sciezkaKatalogu, f'Dane.{typ_pliku}')
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"{sciezkaKatalogu} Nie istnieje taki Plik!")
+    sciezkaPliku = os.path.join(sciezkaKatalogu, f'Dane.{typ_pliku}')
+    if not os.path.exists(sciezkaPliku):
+        raise FileNotFoundError(f"{sciezkaPliku} Plik nie istnieje!")
     
-    with open(file_path, 'r', encoding='utf-8') as file:
+    with open(sciezkaPliku, 'r', encoding='utf-8') as file:
         if typ_pliku == 'csv':
             reader = csv.DictReader(file, delimiter=';')
             for row in reader:
@@ -33,9 +33,9 @@ def operacja_odczyt(sciezkaKatalogu: str) -> int:
                     suma_czasu += int(row['Czas'].strip('s'))
 
         if typ_pliku == 'json':
-            data = json.load(file)
-            if data['Model'] == 'A':
-                suma_czasu += int(data['Czas'].strip('s'))
+            dane = json.load(file)
+            if dane['Model'] == 'A':
+                suma_czasu += int(dane['Czas'].strip('s'))
 
     print(sciezkaKatalogu.ljust(65), f"odczytano Dane.{typ_pliku}".center(30),  f"ilość sekund to {suma_czasu}".rjust(10))
     
@@ -47,7 +47,7 @@ def operacja_tworzenie(sciezkaKatalogu: str) -> None:
     sciezkaPliku = os.path.join(sciezkaKatalogu, f'Dane.{typ_pliku}')
     
     if os.path.exists(sciezkaPliku):
-        raise FileExistsError(f"{sciezkaKatalogu} Plik już istnieje!")
+        raise FileExistsError(f"{sciezkaPliku} Plik już istnieje!")
     
     with open(sciezkaPliku, 'w', encoding='utf-8') as plik:
         if typ_pliku == 'csv':
@@ -56,14 +56,15 @@ def operacja_tworzenie(sciezkaKatalogu: str) -> None:
             writer.writerow([random.choice(['A', 'B', 'C']), random.randint(0, 1000), f"{random.randint(0, 1000)}s"])
         
         if typ_pliku == "json":
-            data = {
+            dane = {
                 'Model': random.choice(['A', 'B', 'C']),
                 'Wynik': random.randint(0, 1000),
                 'Czas': f"{random.randint(0, 1000)}s"
             }
-            json.dump(data, plik, ensure_ascii=False, indent=4)
+            json.dump(dane, plik, ensure_ascii=False, indent=4)
     
     print(sciezkaKatalogu.ljust(65), f"stworzono Dane.{typ_pliku}".center(30))
+    
     return None
 
 def generuj_strukturę_plików(miesiące: List[str], dnie: List[str], pory: List[str]) -> Optional[List[str]]:
@@ -94,14 +95,14 @@ def generuj_strukturę_plików(miesiące: List[str], dnie: List[str], pory: List
 
 def main():
     miesiące_opcje  = list(MIESIĄCE.keys())
-    dni_opcje       = list(DNIE.keys())
+    dnie_opcje      = list(DNIE.keys())
     pory_opcje      = list(PORY.keys())
 
     miesiące_pełne_nazwy= list(MIESIĄCE.values())
     pory_pełne_nazwy    = list(PORY.values())
-    dni_pełne_nazwy     = list(DNIE.values())
+    dnie_pełne_nazwy    = list(DNIE.values())
 
-    zakresy_dni  = dni_opcje + [x + '-' + y for x, y in  combinations(dni_opcje, 2)]
+    zakresy_dni  = dnie_opcje + [x + '-' + y for x, y in  combinations(dnie_opcje, 2)]
 
     parser = argparse.ArgumentParser(
         description="Odczyta wartość z plików o zadanej strukturze lub je stworzy.\n" + 
@@ -125,10 +126,10 @@ def main():
         '-d', '--dnie', nargs='+', type=str, choices=zakresy_dni, required=True,
         help=  'Zakresy dni do obsłużenia dla każdego miesiąca.\n'
                 + "Ma być tyle samo zakresów co miesięcy.\n"
-                + f'Można podać pojedynczy dzień, gdzie dopuszczone wartości dla nazwy dnia to:\n\t{", ".join(dni_opcje)}\n'
+                + f'Można podać pojedynczy dzień, gdzie dopuszczone wartości dla nazwy dnia to:\n\t{", ".join(dnie_opcje)}\n'
                 + 'Można też podać zakres dni (w postaci {od którego dnia}-{do którego dnia} włącznie)\ndla których mają być obsłużone pliki np. pn-czw, sr-nd.\n'
                 + 'Kolejność dni jak powyżej.\n'
-                + f'Struktura będzie obsługiwać odpowiednio podkatalogi o nazwach:\n\t{", ".join(dni_pełne_nazwy)}\n',
+                + f'Struktura będzie obsługiwać odpowiednio podkatalogi o nazwach:\n\t{", ".join(dnie_pełne_nazwy)}\n',
         metavar=''    
     )
 
